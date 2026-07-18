@@ -1,0 +1,173 @@
+scanner:
+  version: "0.1.0"
+  timezone: "UTC"
+  confirmed_candles_only: true
+
+atr:
+  period: 14
+
+swings:
+  reversal_atr: 1.0
+  minimum_bars_between_swings: 2
+  use_close_for_confirmation: false
+
+structure:
+  break_mode: "close_plus_buffer"
+  minimum_break_atr: 0.05
+
+liquidity:
+  minimum_sweep_atr: 0.02
+  maximum_sweep_atr: 1.5
+  max_acceptance_closes: 1
+  return_window_bars: 3
+  failed_continuation_max_distance_atr: 0.5
+  failed_continuation_followup_bars: 5
+  minimum_retracement_atr: 0.5
+  accepted_breakout_min_closes: 2
+  accepted_breakout_min_atr: 0.15
+  distance_penalty_max: 1.0
+  timing_penalty_max: 1.0
+
+fvg:
+  minimum_size_atr: 0.08
+  maximum_size_atr: 5.0
+  expire_after_d1_bars: 90
+  invalidation_mode: "close_through_far_edge"
+
+displacement:
+  minimum_score: 3.0
+  minimum_body_atr: 0.8
+  minimum_range_atr: 1.2
+  minimum_net_move_atr: 0.8
+  minimum_body_efficiency: 0.6
+  bearish_max_close_location: 0.30
+  bullish_min_close_location: 0.70
+  maximum_sequence_bars: 3
+
+d1_setup:
+  minimum_displacement_score: 3.0
+  minimum_context_score: 1.0
+  minimum_quality_score: 5.0
+  require_structure_break: true
+  structure_break_max_lag_bars: 1
+  max_setup_age_bars: 90
+
+h4_swing:
+  reversal_atr: 0.75
+  minimum_bars_between_swings: 1
+  use_close_for_confirmation: false
+
+h4_structure:
+  break_mode: "close_plus_buffer"
+  minimum_break_atr: 0.05
+
+h4_displacement:
+  minimum_score: 3.0
+  minimum_body_atr: 0.8
+  minimum_range_atr: 1.2
+  minimum_net_move_atr: 0.8
+  minimum_body_efficiency: 0.6
+  bearish_max_close_location: 0.30
+  bullish_min_close_location: 0.70
+  maximum_sequence_bars: 3
+
+h4_touch:
+  phase_gap_bars: 1
+  midpoint_fraction: 0.5
+  full_fill_fraction: 1.0
+
+h4_reaction:
+  minimum_early_score: 1.0
+  rejection_wick_body_ratio: 0.5
+  maximum_bars_activation_to_touch: 90
+  maximum_bars_touch_to_confirmation: 18
+  maximum_total_bars: 120
+  require_h4_fvg: false
+  touch_quality_weight: 1.0
+  close_back_weight: 1.5
+  rejection_candle_weight: 1.0
+  lower_close_weight: 0.75
+  local_liquidity_weight: 0.5
+  displacement_weight: 1.5
+  fvg_weight: 1.0
+  freshness_weight: 0.75
+  depth_penalty_weight: 1.0
+  dwell_penalty_per_bar: 0.1
+
+h4_invalidation:
+  boundary_buffer_atr: 0.05
+  minimum_closes_beyond: 2
+  hold_bars: 2
+  reclaim_window_bars: 1
+  maximum_excursion_atr: 1.5
+
+reaction_outcomes:
+  horizons: [6, 12, 24, 42]
+  fixed_atr_targets: [1.0, 2.0, 3.0]
+  continuation_atr: 1.0
+  failure_atr: 1.0
+
+batch_scan:
+  minimum_d1_candles: 60
+  minimum_h4_candles: 100
+  continue_on_symbol_error: true
+
+storage:
+  database_url: "sqlite:///data/htf_scanner.db"
+  candle_cache_dir: "data/candles"
+
+reports:
+  output_dir: "reports"
+  chart_format: "png"
+
+market_data:
+  provider: "binance"
+  base_url: "https://fapi.binance.com"
+  timeout_seconds: 30.0
+
+exchange:
+  quote_asset: "USDT"
+  contract_type: "PERPETUAL"
+
+universe:
+  active_only: true
+  minimum_history_days: 60
+  minimum_quote_volume_24h: 0.0
+  include: []
+  exclude: []
+  maximum_symbols: null
+
+telegram:
+  enabled: false
+  bot_token_env: "7266442176:AAEu-9ZHRmruRuk_MzXCUXrLI0IOlfKk1kI"
+  chat_id_env: "-1004351402655"
+  api_base_url: "https://api.telegram.org"
+  timeout_seconds: 15.0
+  parse_mode: "MarkdownV2"
+
+alerts:
+  enabled: true
+  bootstrap_policy: "suppress"
+  event_types:
+    - "D1_SETUP_ACTIVE"
+    - "H4_REACTION_CONFIRMED"
+  attach_chart: false
+  maximum_delivery_attempts: 12
+  retry_failed_after_minutes: 60
+
+retry:
+  attempts: 4
+  initial_backoff_seconds: 0.5
+  maximum_backoff_seconds: 8.0
+
+scheduler:
+  lock_path: "data/scan-live-once.lock"
+  expected_interval_minutes: 60
+  stale_after_minutes: 180
+
+runtime:
+  bootstrap_start: "2026-01-01T00:00:00Z"
+  state_dir: "data/state"
+  report_dir: "reports/live"
+  rebuild_on_config_change: true
+  continue_on_symbol_error: true

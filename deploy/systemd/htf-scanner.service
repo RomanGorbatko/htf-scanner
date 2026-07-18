@@ -1,0 +1,30 @@
+[Unit]
+Description=HTF production scanner single run
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=rg
+WorkingDirectory=/home/rg/htf-scanner
+EnvironmentFile=-/etc/htf-scanner.env
+Environment=MPLCONFIGDIR=/tmp/htf-matplotlib
+Environment=XDG_CACHE_HOME=/tmp/htf-cache
+ExecStart=/home/rg/htf-scanner/.venv/bin/htf-scanner scan-live-once --config /home/rg/htf-scanner/config.production.yaml
+TimeoutStartSec=55min
+TimeoutStopSec=30s
+KillSignal=SIGTERM
+Restart=no
+Nice=10
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+ReadWritePaths=/home/rg/htf-scanner/data /home/rg/htf-scanner/reports
+
+[Install]
+WantedBy=multi-user.target

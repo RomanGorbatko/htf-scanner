@@ -1,0 +1,64 @@
+scanner:
+  version: "0.1.0"
+  timezone: "UTC"
+  confirmed_candles_only: true
+
+market_data:
+  provider: "binance"
+  base_url: "https://fapi.binance.com"
+  timeout_seconds: 30.0
+
+exchange:
+  quote_asset: "USDT"
+  contract_type: "PERPETUAL"
+
+universe:
+  active_only: true
+  minimum_history_days: 180
+  minimum_quote_volume_24h: 0.0
+  include: []
+  exclude: []
+  maximum_symbols: null
+
+telegram:
+  enabled: true
+  bot_token_env: "HTF_TELEGRAM_BOT_TOKEN"
+  chat_id_env: "HTF_TELEGRAM_CHAT_ID"
+  api_base_url: "https://api.telegram.org"
+  timeout_seconds: 15.0
+  parse_mode: "MarkdownV2"
+
+alerts:
+  enabled: true
+  bootstrap_policy: "suppress"
+  event_types:
+    - "D1_SETUP_ACTIVE"
+    - "H4_REACTION_CONFIRMED"
+  attach_chart: false
+  maximum_delivery_attempts: 12
+  retry_failed_after_minutes: 60
+
+retry:
+  attempts: 4
+  initial_backoff_seconds: 0.5
+  maximum_backoff_seconds: 8.0
+
+scheduler:
+  lock_path: "data/scan-live-once.lock"
+  expected_interval_minutes: 60
+  stale_after_minutes: 180
+
+storage:
+  database_url: "sqlite:///data/htf_scanner.db"
+  candle_cache_dir: "data/candles"
+
+reports:
+  output_dir: "reports"
+  chart_format: "png"
+
+runtime:
+  bootstrap_start: "2024-01-01T00:00:00Z"
+  state_dir: "data/state"
+  report_dir: "reports/live"
+  rebuild_on_config_change: true
+  continue_on_symbol_error: true
