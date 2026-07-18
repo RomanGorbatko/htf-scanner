@@ -25,6 +25,9 @@ sudo PYTHON_BIN=/usr/local/bin/python3.12 ./deploy/install.sh /home/rg/htf-scann
 
 It does not enable the timer automatically.
 
+`config.production.yaml` is owned by `rg` with mode `0640`, so `rg` can maintain it without `sudo`.
+The Telegram environment file remains root-owned because it contains secrets.
+
 For a manual installation:
 
 ```bash

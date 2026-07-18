@@ -11,10 +11,10 @@ build/
 venv/
 .venv/
 .venv-*/
-data/
-reports/
-config.yaml
-config.production.yaml
+/data/
+/reports/
+/config.yaml
+/config.production.yaml
 .env
 .env.*
 *.env

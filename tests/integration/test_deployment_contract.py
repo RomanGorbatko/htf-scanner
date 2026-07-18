@@ -107,3 +107,12 @@ def test_production_example_has_safe_alert_and_universe_defaults() -> None:
     assert not config.alerts.attach_chart
     assert config.storage.database_url == "sqlite:///data/htf_scanner.db"
     assert config.runtime.report_dir == Path("reports/live")
+
+
+def test_runtime_gitignore_paths_are_root_anchored() -> None:
+    patterns = (PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8").splitlines()
+
+    assert "/data/" in patterns
+    assert "/reports/" in patterns
+    assert "data/" not in patterns
+    assert "reports/" not in patterns

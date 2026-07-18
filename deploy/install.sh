@@ -61,9 +61,12 @@ runuser -u "${SERVICE_USER}" -- "${PROJECT_DIR}/.venv/bin/pip" install --upgrade
 runuser -u "${SERVICE_USER}" -- "${PROJECT_DIR}/.venv/bin/pip" install -e "${PROJECT_DIR}"
 
 if [[ ! -f "${PROJECT_DIR}/config.production.yaml" ]]; then
-  install -m 0644 "${PROJECT_DIR}/config.production.example.yaml" \
+  install -m 0640 -o "${SERVICE_USER}" -g "${SERVICE_GROUP}" \
+    "${PROJECT_DIR}/config.production.example.yaml" \
     "${PROJECT_DIR}/config.production.yaml"
 fi
+chown "${SERVICE_USER}":"${SERVICE_GROUP}" "${PROJECT_DIR}/config.production.yaml"
+chmod 0640 "${PROJECT_DIR}/config.production.yaml"
 if [[ ! -f "${ENV_FILE}" ]]; then
   install -m 0640 -o root -g "${SERVICE_GROUP}" \
     "${PROJECT_DIR}/deploy/systemd/htf-scanner.env.example" "${ENV_FILE}"
