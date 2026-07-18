@@ -3,7 +3,7 @@ set -euo pipefail
 
 PROJECT_DIR="${1:-/home/rg/htf-scanner}"
 SERVICE_USER="${HTF_SCANNER_USER:-rg}"
-PYTHON_BIN="${PYTHON_BIN:-python3.12}"
+REQUESTED_PYTHON="${PYTHON_BIN:-}"
 UNIT_DIR="/etc/systemd/system"
 ENV_FILE="/etc/htf-scanner.env"
 
@@ -19,6 +19,23 @@ if ! id -u "${SERVICE_USER}" >/dev/null 2>&1; then
   echo "Service user ${SERVICE_USER} does not exist; create it before installation" >&2
   exit 1
 fi
+
+if [[ -n "${REQUESTED_PYTHON}" ]]; then
+  PYTHON_BIN="$(command -v "${REQUESTED_PYTHON}" || true)"
+else
+  PYTHON_BIN="$(command -v python3.12 || command -v python3 || true)"
+fi
+if [[ -z "${PYTHON_BIN}" || ! -x "${PYTHON_BIN}" ]]; then
+  echo "Python 3.12+ was not found; install it or set PYTHON_BIN=/absolute/path/to/python" >&2
+  exit 1
+fi
+PYTHON_VERSION="$("${PYTHON_BIN}" --version 2>&1)"
+if ! "${PYTHON_BIN}" -c 'import sys; raise SystemExit(sys.version_info < (3, 12))'; then
+  echo "Python 3.12+ is required, but ${PYTHON_BIN} reports ${PYTHON_VERSION}" >&2
+  exit 1
+fi
+echo "Using ${PYTHON_VERSION} at ${PYTHON_BIN}"
+
 SERVICE_GROUP="$(id -gn "${SERVICE_USER}")"
 if ! runuser -u "${SERVICE_USER}" -- test -w "${PROJECT_DIR}"; then
   echo "Project directory must be writable by ${SERVICE_USER}: ${PROJECT_DIR}" >&2
@@ -30,7 +47,15 @@ install -d -o "${SERVICE_USER}" -g "${SERVICE_GROUP}" \
   "${PROJECT_DIR}/reports" "${PROJECT_DIR}/reports/live"
 
 if [[ ! -x "${PROJECT_DIR}/.venv/bin/python" ]]; then
-  runuser -u "${SERVICE_USER}" -- "${PYTHON_BIN}" -m venv "${PROJECT_DIR}/.venv"
+  if ! runuser -u "${SERVICE_USER}" -- "${PYTHON_BIN}" -m venv "${PROJECT_DIR}/.venv"; then
+    echo "Failed to create the virtual environment; install the venv module for ${PYTHON_VERSION}" >&2
+    exit 1
+  fi
+fi
+if ! "${PROJECT_DIR}/.venv/bin/python" \
+  -c 'import sys; raise SystemExit(sys.version_info < (3, 12))'; then
+  echo "Existing virtual environment must use Python 3.12+: ${PROJECT_DIR}/.venv" >&2
+  exit 1
 fi
 runuser -u "${SERVICE_USER}" -- "${PROJECT_DIR}/.venv/bin/pip" install --upgrade pip
 runuser -u "${SERVICE_USER}" -- "${PROJECT_DIR}/.venv/bin/pip" install -e "${PROJECT_DIR}"

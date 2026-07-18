@@ -16,7 +16,14 @@ sudo ./deploy/install.sh /home/rg/htf-scanner
 
 The installer requires `/home/rg/htf-scanner` to be writable by `rg`. It creates the virtual
 environment and installs the package as `rg`, while only the systemd units and environment file are
-managed as root. It does not enable the timer automatically.
+managed as root. It automatically tries `python3.12` and then `python3`, verifies Python 3.12+, and
+passes the resolved absolute path through `runuser`. To select another executable explicitly:
+
+```bash
+sudo PYTHON_BIN=/usr/local/bin/python3.12 ./deploy/install.sh /home/rg/htf-scanner
+```
+
+It does not enable the timer automatically.
 
 For a manual installation:
 
@@ -31,6 +38,17 @@ cp config.production.example.yaml config.production.yaml
 All relative paths in the example configuration are resolved from the service
 `WorkingDirectory=/home/rg/htf-scanner`. Absolute paths are also accepted when data is mounted
 separately.
+
+If installation reports that Python is missing or too old, inspect the server before retrying:
+
+```bash
+command -v python3.12 || command -v python3
+python3 --version
+python3 -m venv --help
+```
+
+Install Python 3.12 and its `venv` module through the server's package manager when these checks
+fail.
 
 ## 2. Configure Telegram
 

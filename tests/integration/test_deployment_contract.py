@@ -83,6 +83,9 @@ def test_documented_systemd_command_matches_service_and_cli() -> None:
     assert "ReadWritePaths=/home/rg/htf-scanner/data /home/rg/htf-scanner/reports" in service
     assert 'PROJECT_DIR="${1:-/home/rg/htf-scanner}"' in installer
     assert 'SERVICE_USER="${HTF_SCANNER_USER:-rg}"' in installer
+    assert "command -v python3.12 || command -v python3" in installer
+    assert "sys.version_info < (3, 12)" in installer
+    assert 'runuser -u "${SERVICE_USER}" -- "${PYTHON_BIN}" -m venv' in installer
     assert "/opt/htf-scanner" not in "\n".join([service, deployment, readme, installer])
     assert "OnCalendar=*-*-* *:05:00" in (
         PROJECT_ROOT / "deploy/systemd/htf-scanner.timer"
