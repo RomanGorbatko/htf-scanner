@@ -36,7 +36,7 @@ Last updated: 2026-07-19.
 ### Verification status
 
 - [x] Unit, integration, synthetic regression, D1/H4 JTO, and production recovery tests pass:
-  129 tests.
+  131 tests.
 - [x] Overall test coverage exceeds the target and prior baseline: 93% branch coverage report.
 - [x] Ruff formatting and lint checks pass.
 - [x] Strict mypy checks pass.

@@ -242,3 +242,30 @@ def test_doctor_rejects_empty_market_discovery_and_missing_credentials(tmp_path:
     with pytest.raises(DoctorError, match="credential environment variables"):
         run_doctor(config, {}, provider_factory=lambda _config: provider)
     assert provider.closed
+
+
+def test_doctor_rejects_credential_values_without_echoing_them(tmp_path: Path) -> None:
+    token = "123456:do-not-log-this-token"
+    base = _doctor_config(tmp_path)
+    config = base.model_copy(
+        update={
+            "telegram": base.telegram.model_copy(
+                update={
+                    "bot_token_env": token,
+                    "chat_id_env": "-1001234567890",
+                }
+            )
+        }
+    )
+    provider_created = False
+
+    def provider_factory(_config: MarketDataConfig) -> _DoctorProvider:
+        nonlocal provider_created
+        provider_created = True
+        return _DoctorProvider()
+
+    with pytest.raises(DoctorError, match="environment variable names") as caught:
+        run_doctor(config, {}, provider_factory=provider_factory)
+
+    assert token not in str(caught.value)
+    assert not provider_created

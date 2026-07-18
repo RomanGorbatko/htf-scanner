@@ -5,7 +5,11 @@ from pathlib import Path
 from uuid import uuid4
 
 from htf_scanner.alerts.telegram import TelegramSender
-from htf_scanner.config import AppConfig, MarketDataConfig
+from htf_scanner.config import (
+    AppConfig,
+    MarketDataConfig,
+    telegram_environment_names_valid,
+)
 from htf_scanner.data.factory import create_market_data_provider
 from htf_scanner.data.provider import MarketDataProvider
 from htf_scanner.storage.database import create_database_engine
@@ -35,6 +39,11 @@ def run_doctor(
     provider_factory: ProviderFactory = create_market_data_provider,
 ) -> DoctorResult:
     checks = ["configuration parsed"]
+    if config.telegram.enabled and not telegram_environment_names_valid(config.telegram):
+        raise DoctorError(
+            "telegram.bot_token_env and telegram.chat_id_env must contain environment "
+            "variable names, not credential values"
+        )
     paths = _runtime_paths(config)
     for label, path in paths:
         _assert_writable_directory(path, label)
@@ -72,8 +81,7 @@ def run_doctor(
         chat_id = environment.get(config.telegram.chat_id_env, "")
         if not token or not chat_id:
             raise DoctorError(
-                "Telegram is enabled but required credential environment variables are missing: "
-                f"{config.telegram.bot_token_env}, {config.telegram.chat_id_env}"
+                "Telegram is enabled but required credential environment variables are missing"
             )
         checks.append("Telegram credentials present")
         if send_telegram_test:

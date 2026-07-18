@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Literal
@@ -157,6 +158,13 @@ class TelegramConfig(StrictModel):
     api_base_url: str = "https://api.telegram.org"
     timeout_seconds: float = Field(default=15.0, gt=0)
     parse_mode: Literal["MarkdownV2"] = "MarkdownV2"
+
+
+def telegram_environment_names_valid(config: TelegramConfig) -> bool:
+    pattern = re.compile(r"[A-Za-z_][A-Za-z0-9_]*\Z")
+    return bool(pattern.fullmatch(config.bot_token_env)) and bool(
+        pattern.fullmatch(config.chat_id_env)
+    )
 
 
 class AlertsConfig(StrictModel):

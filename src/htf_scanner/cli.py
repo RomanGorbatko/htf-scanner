@@ -6,7 +6,12 @@ from uuid import NAMESPACE_URL, uuid5
 import typer
 
 from htf_scanner.batch import BatchUniverseResult
-from htf_scanner.config import AppConfig, configuration_hash, load_config
+from htf_scanner.config import (
+    AppConfig,
+    configuration_hash,
+    load_config,
+    telegram_environment_names_valid,
+)
 from htf_scanner.data.binance_rest import BinanceRestClient, validate_candles
 from htf_scanner.data.cache import CandleFileCache
 from htf_scanner.data.downloader import CandleDownloader
@@ -437,6 +442,17 @@ def scan_live_once_command(
     except Exception as error:
         typer.echo(f"Configuration failed: {error}", err=True)
         raise typer.Exit(code=2) from error
+    if (
+        config.telegram.enabled
+        and not no_alerts
+        and not telegram_environment_names_valid(config.telegram)
+    ):
+        typer.echo(
+            "Configuration failed: telegram.bot_token_env and telegram.chat_id_env must "
+            "contain environment variable names, not credential values",
+            err=True,
+        )
+        raise typer.Exit(code=2)
     config_hash = configuration_hash(config)
     stale_after = timedelta(minutes=config.scheduler.stale_after_minutes)
     try:

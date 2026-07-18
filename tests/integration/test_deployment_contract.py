@@ -50,6 +50,31 @@ def test_scan_live_once_reports_configuration_errors(tmp_path: Path) -> None:
     assert "Configuration failed:" in result.output
 
 
+def test_scan_live_once_does_not_echo_telegram_credentials_from_yaml(tmp_path: Path) -> None:
+    token = "123456:do-not-log-this-token"
+    config_path = tmp_path / "credential-in-yaml.yaml"
+    config_path.write_text(
+        "\n".join(
+            [
+                "telegram:",
+                "  enabled: true",
+                f"  bot_token_env: '{token}'",
+                "  chat_id_env: '-1001234567890'",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = CliRunner().invoke(
+        app,
+        ["scan-live-once", "--config", str(config_path)],
+    )
+
+    assert result.exit_code == 2
+    assert "environment variable names" in result.output
+    assert token not in result.output
+
+
 def test_editable_install_exposes_console_entry_point() -> None:
     metadata = tomllib.loads((PROJECT_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     assert metadata["project"]["requires-python"] == ">=3.12"

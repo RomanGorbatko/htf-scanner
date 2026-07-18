@@ -55,7 +55,17 @@ fail.
 
 ## 2. Configure Telegram
 
-Edit `/etc/htf-scanner.env`; never put credentials in YAML:
+Keep these literal environment variable names in `config.production.yaml`; do not replace them with
+the token or chat ID:
+
+```yaml
+telegram:
+  enabled: true
+  bot_token_env: "HTF_TELEGRAM_BOT_TOKEN"
+  chat_id_env: "HTF_TELEGRAM_CHAT_ID"
+```
+
+Put the actual credentials only in `/etc/htf-scanner.env`:
 
 ```bash
 HTF_TELEGRAM_BOT_TOKEN=123456:replace_with_real_token
